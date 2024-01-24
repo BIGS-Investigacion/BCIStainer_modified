@@ -2,6 +2,7 @@ import time
 import torch
 import datetime
 import torch.nn.functional as F
+import wandb
 
 from ..utils import *
 
@@ -16,6 +17,7 @@ class BCITrainerBasic(BCIBaseTrainer):
         best_val_psnr = 0.0
         best_val_clsf = np.inf
         start_time = time.time()
+        train_m, val_m = None, None
 
         basic_msg = 'PSNR:{:.4f} SSIM:{:.4f} CLSF:{:.4f} Epoch:{}'
         for epoch in range(self.start_epoch, self.epochs):
@@ -46,6 +48,7 @@ class BCITrainerBasic(BCIBaseTrainer):
             if (epoch % self.ckpt_freq == 0) or (epoch + 1 == self.epochs):
                 self._save_checkpoint(epoch)
 
+            train_m, val_m = train_metrics, val_metrics
             # write logs
             self._save_logs(epoch, train_metrics, val_metrics)
             print()
@@ -57,6 +60,12 @@ class BCITrainerBasic(BCIBaseTrainer):
         total_time = time.time() - start_time
         total_time_str = str(datetime.timedelta(seconds=int(total_time)))
         print('- Training time {}'.format(total_time_str))
+        wandb.log({f"epoch_{epoch}_summary": {
+            "start_time": start_time,
+            "end_time": time.time(),
+            **{f't{k}': round(v, 6) for k, v in train_m.items()},
+            **{f'v{k}': round(v, 6) for k, v in val_m.items()}
+        }})
 
         return
 
@@ -72,11 +81,13 @@ class BCITrainerBasic(BCIBaseTrainer):
         for iter_step, data in enumerate(data_iter):
             self.D_opt.zero_grad()
             self.G_opt.zero_grad()
+            meta_data_wandb = {"iteration_step": iter_step, "epoch": epoch}
 
             # lr scheduler on per iteration
             if iter_step % self.accum_iter == 0:
                 self._adjust_learning_rate(iter_step / len(loader) + epoch)
             logger.update(lr=self.G_opt.param_groups[0]['lr'])
+            meta_data_wandb["learning_rate"] = self.G_opt.param_groups[0]['lr']
 
             # forward
             he, ihc, level = [d.to(self.device) for d in data]
@@ -94,6 +105,7 @@ class BCITrainerBasic(BCIBaseTrainer):
                 ihc_plevel, ihc_platent = self.C(ihc)
                 lossC = self.ccl_loss(ihc_plevel, level)
                 logger.update(Cc=lossC.item())
+                meta_data_wandb["Cc"] = lossC.item()
 
                 lossC /= self.accum_iter
                 lossC.backward()
@@ -104,6 +116,8 @@ class BCITrainerBasic(BCIBaseTrainer):
             self._set_requires_grad(self.D, True)
             Dfake, Dreal = self._D_loss(he, ihc, ihc_phr)
             logger.update(Df=Dfake.item(), Dr=Dreal.item())
+            meta_data_wandb["Df"] = Dfake.item()
+            meta_data_wandb["Dr"] = Dreal.item()
             lossD = (Dfake + Dreal) * 0.5
 
             lossD /= self.accum_iter
@@ -117,6 +131,10 @@ class BCITrainerBasic(BCIBaseTrainer):
             Gcls = self.gcl_loss(he_plevel, level)
             logger.update(Gg=Ggan.item(), Gr=Grec.item(),
                           Gs=Gsim.item(), Gc=Gcls.item())
+            meta_data_wandb["Gg"] = Ggan.item()
+            meta_data_wandb["Gr"] = Grec.item()
+            meta_data_wandb["Gs"] = Gsim.item()
+            meta_data_wandb["Gc"] = Gcls.item()
             lossG = Ggan + Grec + Gsim + Gcls
 
             if self.apply_cmp and (epoch >= self.start_cmp):
@@ -124,6 +142,7 @@ class BCITrainerBasic(BCIBaseTrainer):
                 self._set_requires_grad(self.C, False)
                 Gcmp = self._C_loss(ihc, ihc_phr, level)
                 logger.update(Gm=Gcmp.item())
+                meta_data_wandb["Gm"] = Gcmp.item()
                 lossG += Gcmp
 
             lossG /= self.accum_iter
@@ -132,6 +151,7 @@ class BCITrainerBasic(BCIBaseTrainer):
                 self.G_opt.step()
                 if self.ema:
                     self.Gema.update()
+            wandb.log({"train": meta_data_wandb})
 
         logger_info = {
             key: meter.global_avg
@@ -160,6 +180,11 @@ class BCITrainerBasic(BCIBaseTrainer):
                 ihc_plevel, ihc_platent = self.C(ihc_phr)
                 clsf = self.ccl_loss(ihc_plevel, level)
                 logger.update(clsf=clsf.item())
+            wandb.log({"validation": {
+                "psnr": psnr.item(),
+                "ssim": ssim.item(),
+                "clsf": clsf.item()
+            }})
 
         logger_info = {
             key: meter.global_avg
@@ -218,7 +243,7 @@ class BCITrainerBasic(BCIBaseTrainer):
             D_input = torch.cat((he, ihc), 1)
         else:  # self.D_input == 'ihc
             D_input = ihc
-        
+
         if self.diffaug:
             D_input = DiffAugment(D_input)
 

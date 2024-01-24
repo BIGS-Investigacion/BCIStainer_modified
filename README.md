@@ -46,17 +46,21 @@ Download dataset from [BCI page](https://bupt-ai-cz.github.io/BCI/) and put it i
 
 ## 4. Training and Evaluation
 
+
 Train model using [train.sh](./scripts/train.sh):
 
 ```bash
+# to select the graphics card do this 
+export CUDA_VISIBLE_DEVICES=3
+
 # training
-CUDA_VISIBLE_DEVICES=0          \
+CUDA_VISIBLE_DEVICES=3        \
 python train.py                 \
     --train_dir   ./data/train  \
     --val_dir     ./data/val    \
     --exp_root    ./experiments \
     --config_file ./configs/stainer_basic_cmp/exp3.yaml \
-    --trainer     basic
+    --trainer     basic | tee training_logs_23_01_2024.log
 ```
 
 Logs, and models are saved in [experiments/stainer_basic_cmp/exp3](./experiments/stainer_basic_cmp/exp3).

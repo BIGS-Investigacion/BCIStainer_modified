@@ -1,3 +1,18 @@
+## data files - image
+data/test/HE/*
+data/test/IHC/*
+data/train/HE/*
+data/train/IHC/*
+data/val/HE/*
+data/val/IHC/*
+
+# remove load commiting
+experiments-post/*
+experiments-wandb/*
+
+# wandb files
+wandb/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

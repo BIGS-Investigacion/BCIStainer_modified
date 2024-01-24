@@ -1,5 +1,6 @@
 import os
 import argparse
+import wandb
 
 from libs.utils import *
 from libs.train_cahr import *
@@ -24,6 +25,18 @@ def main(args):
     print(f'-  Exp  Dir: {exp_dir}')
     print(f'- Configs  : {args.config_file}')
     print(f'- Trainer  : {args.trainer}', '\n')
+
+    wandb.init(
+        # set the wandb project where this run will be logged
+        project="bci-stainer-retrained",
+        config={
+        "Train Dir": {args.train_dir},
+        "Val Dir": {args.val_dir},
+        "Exp Dir": {exp_dir},
+        "Configs": {args.config_file},
+        "Trainer": {args.trainer},
+        }
+    )
 
     if args.trainer == 'basic':
         # loads dataloder for training and validation
