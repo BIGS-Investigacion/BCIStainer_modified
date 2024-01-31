@@ -9,6 +9,8 @@ data/val/IHC/*
 # remove load commiting
 experiments-post/*
 experiments-wandb/*
+*.pth
+**log.txt
 
 # wandb files
 wandb/

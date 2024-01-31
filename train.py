@@ -35,6 +35,7 @@ def main(args):
         "Exp Dir": {exp_dir},
         "Configs": {args.config_file},
         "Trainer": {args.trainer},
+        **configs
         }
     )
 

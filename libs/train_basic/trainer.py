@@ -13,7 +13,6 @@ class BCITrainerBasic(BCIBaseTrainer):
         super(BCITrainerBasic, self).__init__(configs, exp_dir, resume_ckpt)
 
     def forward(self, train_loader, val_loader):
-
         best_val_psnr = 0.0
         best_val_clsf = np.inf
         start_time = time.time()
@@ -51,6 +50,12 @@ class BCITrainerBasic(BCIBaseTrainer):
             train_m, val_m = train_metrics, val_metrics
             # write logs
             self._save_logs(epoch, train_metrics, val_metrics)
+            wandb.log({
+                "epoch": epoch,
+                "duration": str(datetime.timedelta(seconds=int(time.time() - start_time))),
+                **{f'train.{k}': round(v, 6) for k, v in train_m.items()},
+                **{f'validation.{k}': round(v, 6) for k, v in val_m.items()}
+            })
             print()
 
         print(psnr_msg)
@@ -60,12 +65,6 @@ class BCITrainerBasic(BCIBaseTrainer):
         total_time = time.time() - start_time
         total_time_str = str(datetime.timedelta(seconds=int(total_time)))
         print('- Training time {}'.format(total_time_str))
-        wandb.log({f"epoch_{epoch}_summary": {
-            "start_time": start_time,
-            "end_time": time.time(),
-            **{f't{k}': round(v, 6) for k, v in train_m.items()},
-            **{f'v{k}': round(v, 6) for k, v in val_m.items()}
-        }})
 
         return
 
@@ -151,7 +150,7 @@ class BCITrainerBasic(BCIBaseTrainer):
                 self.G_opt.step()
                 if self.ema:
                     self.Gema.update()
-            wandb.log({"train": meta_data_wandb})
+            # wandb.log({"train": meta_data_wandb})
 
         logger_info = {
             key: meter.global_avg
@@ -180,11 +179,11 @@ class BCITrainerBasic(BCIBaseTrainer):
                 ihc_plevel, ihc_platent = self.C(ihc_phr)
                 clsf = self.ccl_loss(ihc_plevel, level)
                 logger.update(clsf=clsf.item())
-            wandb.log({"validation": {
-                "psnr": psnr.item(),
-                "ssim": ssim.item(),
-                "clsf": clsf.item()
-            }})
+            # wandb.log({"validation": {
+            #     "psnr": psnr.item(),
+            #     "ssim": ssim.item(),
+            #     "clsf": clsf.item()
+            # }})
 
         logger_info = {
             key: meter.global_avg
