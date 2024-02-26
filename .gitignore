@@ -1,5 +1,6 @@
 .idea
 
+evaluations-*
 ## data files - image
 data/test/HE/*
 data/test/IHC/*

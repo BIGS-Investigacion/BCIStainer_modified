@@ -110,7 +110,7 @@ class BCIEvaluatorCAHR(object):
         files   = os.listdir(he_dir)
         files.sort()
 
-        fid_model = FrechetInceptionDistance(feature=256)
+        fid_model = FrechetInceptionDistance(feature=64)
         metrics_list = []
         for file in tqdm(files, ncols=88):
             he_path = opj(he_dir, file)
