@@ -4,9 +4,12 @@ import torch
 import numpy as np
 import pandas as pd
 import imageio.v2 as iio
+from torchmetrics.image import FrechetInceptionDistance
 
 from tqdm import tqdm
 from ema_pytorch import EMA
+
+from . import update_fid_model
 from ..models import define_G
 from os.path import join as opj
 from skimage.metrics import structural_similarity
@@ -58,6 +61,7 @@ class BCIEvaluatorBasic(object):
         files   = os.listdir(he_dir)
         files.sort()
 
+        fid_model = FrechetInceptionDistance(feature=256)
         metrics_list = []
         for file in tqdm(files, ncols=88):
             he_path = opj(he_dir, file)
@@ -70,6 +74,7 @@ class BCIEvaluatorBasic(object):
                 self.predict(he_path, ihc_pred_path)
 
             psnr, ssim = self.evaluate(ihc_path, ihc_pred_path)
+            update_fid_model(fid_model, ihc_path, ihc_pred_path)
             metrics_list.append([he_path, ihc_path, ihc_pred_path, psnr, ssim])
 
         columns = ['he', 'ihc', 'ihc_pred', 'psnr', 'ssim']
@@ -84,6 +89,7 @@ class BCIEvaluatorBasic(object):
         print(f'- Output: {output_dir}')
         print(f'- PSNR:   {psnr_avg:.3f} ± {psnr_std:.3f}')
         print(f'- SSIM:   {ssim_avg:.3f} ± {ssim_std:.3f}')
+        print(f"- FID:    {fid_model.compute():.5f}")
 
         return
 
