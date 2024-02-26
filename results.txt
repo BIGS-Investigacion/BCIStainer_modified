@@ -1,4 +1,9 @@
 
+./evaluations-24-batch-size/stainer_basic_cmp/exp3/model_best_psnr_tta
+- PSNR:   22.766 ± 4.659
+- SSIM:   0.547 ± 0.185
+- FID:    3.37774
+
 ./evaluations-4-batch-size/stainer_basic_cmp/exp3/model_best_psnr_tta
 - PSNR:   21.930 ± 5.047
 - SSIM:   0.577 ± 0.178
@@ -8,3 +13,4 @@
 - PSNR:   21.069 ± 5.964
 - SSIM:   0.608 ± 0.173
 - FID:    32.05029
+
