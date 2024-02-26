@@ -5,6 +5,10 @@ import numpy as np
 import pandas as pd
 import imageio.v2 as iio
 
+import torchvision.transforms as transforms
+from torchmetrics.image.fid import FrechetInceptionDistance
+from PIL import Image
+
 from tqdm import tqdm
 from ema_pytorch import EMA
 from ..models import define_G
@@ -13,6 +17,41 @@ from os.path import join as opj
 from skimage.metrics import structural_similarity
 from skimage.metrics import peak_signal_noise_ratio
 from ..utils import normalize_image, unnormalize_image, tta, untta
+
+
+def load_image_as_tensor(image_path, image_size=(1024, 1024)):
+    image = Image.open(image_path).convert("RGB")  # Ensure RGB mode
+    tensor_image = torch.as_tensor(np.asarray(image), dtype=torch.uint8)
+
+    # Add batch dimension (batch size of 1)
+    tensor_image = tensor_image.unsqueeze(0)
+    tensor_image = tensor_image.permute(0, 3, 1, 2)
+    assert tensor_image.shape[1] == 3, "Second element should be 3 (for RGB)!"
+
+    return tensor_image
+
+
+def update_fid_model(fid_model, real_img_path, predicted_img_path):
+    # update the real distribution
+    fid_model.update(load_image_as_tensor(real_img_path), real=True)
+    # update the fake/predicted distribution
+    fid_model.update(load_image_as_tensor(predicted_img_path), real=False)
+
+
+def compute_fid_score(fid_model: FrechetInceptionDistance, real_img_paths: list, predicted_img_paths: list):
+    assert len(real_img_paths) == len(predicted_img_paths), "The amount of real and predicted images should match!"
+    # create the FID model
+    # fid_model = FrechetInceptionDistance(feature=64)
+
+    for real_img, pred_img in tqdm(zip(real_img_paths, predicted_img_paths), total=len(predicted_img_paths)):
+        # update the real distribution
+        fid_model.update(load_image_as_tensor(real_img), real=True)
+        # update the fake/predicted distribution
+        fid_model.update(load_image_as_tensor(pred_img), real=False)
+
+    metric_score = fid_model.compute()
+    print(f"The FID score is {metric_score:.5f} for {len(predicted_img_paths)} images.")
+    # fid score is 0 if the images are the same.
 
 
 class BCIEvaluatorCAHR(object):
@@ -71,6 +110,7 @@ class BCIEvaluatorCAHR(object):
         files   = os.listdir(he_dir)
         files.sort()
 
+        fid_model = FrechetInceptionDistance(feature=64)
         metrics_list = []
         for file in tqdm(files, ncols=88):
             he_path = opj(he_dir, file)
@@ -83,6 +123,7 @@ class BCIEvaluatorCAHR(object):
                 self.predict(he_path, ihc_pred_path)
 
             psnr, ssim = self.evaluate(ihc_path, ihc_pred_path)
+            update_fid_model(fid_model, ihc_path, ihc_pred_path)
             metrics_list.append([he_path, ihc_path, ihc_pred_path, psnr, ssim])
 
         columns = ['he', 'ihc', 'ihc_pred', 'psnr', 'ssim']
@@ -97,6 +138,7 @@ class BCIEvaluatorCAHR(object):
         print(f'- Output: {output_dir}')
         print(f'- PSNR:   {psnr_avg:.3f} ± {psnr_std:.3f}')
         print(f'- SSIM:   {ssim_avg:.3f} ± {ssim_std:.3f}')
+        print(f"- FID:    {fid_model.compute():.5f}")
 
         return
 
