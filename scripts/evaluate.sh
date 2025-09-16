@@ -8,11 +8,11 @@ evaluator=basic
 model_name=model_best_psnr
 
 # configurations of experiment
-config_file=./configs/stainer_basic_cmp/exp3.yaml
+config_file=./configs/stainer_basic_cmp/pretrained.yaml
 
 # evaluation
 CUDA_VISIBLE_DEVICES=$device      \
-python evaluate.py                \
+python src/bcistainer/evaluate.py                \
     --data_dir    ./data/test     \
     --exp_root    ./experiments   \
     --output_root ./evaluations   \

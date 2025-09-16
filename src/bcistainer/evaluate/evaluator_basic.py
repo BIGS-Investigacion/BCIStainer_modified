@@ -10,11 +10,11 @@ from tqdm import tqdm
 from ema_pytorch import EMA
 
 from . import update_fid_model
-from ..models import define_G
+from models import define_G
 from os.path import join as opj
 from skimage.metrics import structural_similarity
 from skimage.metrics import peak_signal_noise_ratio
-from ..utils import normalize_image, unnormalize_image, tta, untta
+from utils import normalize_image, unnormalize_image, tta, untta
 
 
 class BCIEvaluatorBasic(object):

@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bcistainer"
+version = "0.1.0"
+description = "HE→IHC stainer (BCI challenge)"
+readme = "README.md"
+requires-python = ">=3.8"
+authors = [{ name = "BIGS Investigacion" }]
+# Importante: deja PyTorch fuera; que cada quien lo instale según su CUDA
+dependencies = [
+  "numpy",
+  "opencv-python",
+  "albumentations",
+  "tqdm",
+  # añade aquí lo que tengas en requirements.txt salvo torch/torchvision
+]
+
+[project.urls]
+Homepage = "https://github.com/BIGS-Investigacion/BCIStainer_modified"
+
+[project.scripts]
+bcistainer-train = "bcistainer.cli:train"
+bcistainer-eval = "bcistainer.cli:evaluate"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+packages = { find = { where = ["src"] } }
+include-package-data = true
+
+[tool.setuptools.package-data]
+# incluye configs, pesos, etc. ajusta patrones si hace falta
+"*" = ["*.yaml", "*.yml", "*.txt", "*.json", "*.pt", "*.pth", "*.png", "*.jpg"]

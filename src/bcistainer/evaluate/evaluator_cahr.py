@@ -11,12 +11,12 @@ from PIL import Image
 
 from tqdm import tqdm
 from ema_pytorch import EMA
-from ..models import define_G
+from models import define_G
 from itertools import product
 from os.path import join as opj
 from skimage.metrics import structural_similarity
 from skimage.metrics import peak_signal_noise_ratio
-from ..utils import normalize_image, unnormalize_image, tta, untta
+from utils import normalize_image, unnormalize_image, tta, untta
 
 
 def load_image_as_tensor(image_path, image_size=(1024, 1024)):

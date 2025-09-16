@@ -5,7 +5,7 @@ import torch
 
 from .losses import *
 from ema_pytorch import EMA
-from ..models import define_G, define_D, define_C
+from models import define_G, define_D, define_C
 
 
 class BCIBaseTrainer(object):

@@ -6,12 +6,12 @@ device=2
 trainer=basic
 
 # configurations of experiment
-config_file=./configs/stainer_basic_cmp/exp3.yaml
+config_file=./configs/stainer_basic_cmp/pretrained.yaml
 echo "Starting training on device: $device"
 
 # training
 CUDA_VISIBLE_DEVICES=$device    \
-python train.py                 \
+python src/bcistainer/train.py                 \
     --train_dir   ./data/train  \
     --val_dir     ./data/val    \
     --exp_root    ./experiments-4-batch-size \

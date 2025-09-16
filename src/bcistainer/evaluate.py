@@ -1,8 +1,8 @@
 import os
 import argparse
 
-from libs.utils import *
-from libs.evaluate import *
+from utils import *
+from evaluate import *
 from omegaconf import OmegaConf
 
 
