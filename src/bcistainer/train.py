@@ -2,14 +2,13 @@ import os
 import argparse
 import wandb
 
-from libs.utils import *
-from libs.train_cahr import *
-from libs.train_basic import *
+from utils import *
+from train_cahr import *
+from train_basic import *
 from omegaconf import OmegaConf
 
 
 def main(args):
-
     # loads configs
     configs = OmegaConf.load(args.config_file)
 
@@ -26,7 +25,7 @@ def main(args):
     print(f'- Configs  : {args.config_file}')
     print(f'- Trainer  : {args.trainer}', '\n')
 
-    wandb.init(
+    '''wandb.init(
         # set the wandb project where this run will be logged
         project="bci-stainer-retrained",
         config={
@@ -37,7 +36,7 @@ def main(args):
         "Trainer": {args.trainer},
         **configs
         }
-    )
+    )'''
 
     if args.trainer == 'basic':
         # loads dataloder for training and validation

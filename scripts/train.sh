@@ -2,7 +2,7 @@
 
 # test run on 23.01.2024 - 21.26.
 # settings
-device=2
+device=0
 trainer=basic
 
 # configurations of experiment

@@ -5,7 +5,7 @@ import albumentations as A
 import matplotlib.pyplot as plt
 
 from os.path import join as opj
-from ..utils import normalize_image
+from utils import normalize_image
 from torch.utils.data import Dataset, DataLoader
 
 

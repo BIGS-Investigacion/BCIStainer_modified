@@ -4,7 +4,7 @@ import datetime
 import torch.nn.functional as F
 import wandb
 
-from ..utils import *
+from utils import *
 
 
 class BCITrainerBasic(BCIBaseTrainer):

@@ -3,7 +3,7 @@ import torch
 import datetime
 import torch.nn.functional as F
 
-from ..utils import *
+from utils import *
 
 
 class BCITrainerCAHR(BCIBaseTrainer):
