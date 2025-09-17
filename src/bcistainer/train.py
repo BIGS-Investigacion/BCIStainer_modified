@@ -25,7 +25,7 @@ def main(args):
     print(f'- Configs  : {args.config_file}')
     print(f'- Trainer  : {args.trainer}', '\n')
 
-    '''wandb.init(
+    wandb.init(
         # set the wandb project where this run will be logged
         project="bci-stainer-retrained",
         config={
@@ -36,7 +36,7 @@ def main(args):
         "Trainer": {args.trainer},
         **configs
         }
-    )'''
+    )
 
     if args.trainer == 'basic':
         # loads dataloder for training and validation
