@@ -11,7 +11,7 @@ from PIL import Image
 
 from tqdm import tqdm
 from ema_pytorch import EMA
-from models import define_G
+from bcimodels import define_G
 from itertools import product
 from os.path import join as opj
 from skimage.metrics import structural_similarity
